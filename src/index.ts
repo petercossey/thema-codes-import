@@ -7,6 +7,7 @@ import { ConfigLoader } from './config';
 import { DataLoader } from './data-loader';
 import { DatabaseManager } from './db';
 import { BigCommerceClient } from './bigcommerce';
+import { HierarchicalProcessor } from './processor';
 
 async function validateFilePath(path: string): Promise<void> {
   try {
@@ -61,7 +62,21 @@ async function main() {
     DataLoader.validateHierarchy(themaCodes);
     logger.info(`Loaded ${themaCodes.length} Thema codes successfully`);
 
-    // TODO: Process Thema codes and create categories using bcClient
+    // Initialize processor
+    const processor = new HierarchicalProcessor(db, bcClient, config);
+    
+    // Process codes hierarchically
+    const results = await processor.processCodes(themaCodes);
+    
+    // Log results
+    const successful = results.filter(r => r.categoryId).length;
+    const failed = results.filter(r => r.error).length;
+    
+    logger.info(`Import completed. Successfully imported: ${successful}, Failed: ${failed}`);
+    
+    if (failed > 0) {
+      logger.warn('Failed imports:', results.filter(r => r.error));
+    }
     
   } catch (error) {
     logger.error('Error in main process:', error);
