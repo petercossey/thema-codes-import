@@ -9,8 +9,11 @@ export class DataLoader {
       const fileContent = await readFile(sourcePath, 'utf-8');
       const jsonData = JSON.parse(fileContent);
 
+      // Extract the codes array from the nested structure
+      const codes = jsonData.CodeList.ThemaCodes.Code;
+      
       // Validate data structure using Zod schema
-      const validatedData = ThemaCodesSchema.parse(jsonData);
+      const validatedData = ThemaCodesSchema.parse(codes);
 
       logger.info(`Successfully loaded ${validatedData.length} Thema codes`);
       return validatedData;

@@ -4,24 +4,22 @@ import { join } from 'path';
 
 describe('DataLoader', () => {
   const testDir = join(__dirname, '../test-temp');
-  const validCodes = [
-    {
-      CodeValue: 'ABA',
-      CodeDescription: 'Theory of art',
-      CodeNotes: 'Some notes',
-      CodeParent: '',
-      IssueNumber: 1,
-      Modified: '2024-02-28'
-    },
-    {
-      CodeValue: 'ABAA',
-      CodeDescription: 'Art techniques',
-      CodeNotes: 'Child category',
-      CodeParent: 'ABA',
-      IssueNumber: 1,
-      Modified: 1709136000000
+  const validCodes = {
+    CodeList: {
+      ThemaCodes: {
+        Code: [
+          {
+            CodeValue: 'ABA',
+            CodeDescription: 'Theory of art',
+            CodeNotes: 'Some notes',
+            CodeParent: '',
+            IssueNumber: 1,
+            Modified: '2024-02-28'
+          }
+        ]
+      }
     }
-  ];
+  };
 
   beforeAll(async () => {
     await mkdir(testDir, { recursive: true });
@@ -36,7 +34,7 @@ describe('DataLoader', () => {
     await writeFile(sourcePath, JSON.stringify(validCodes));
 
     const codes = await DataLoader.loadThemaCodes(sourcePath);
-    expect(codes).toEqual(validCodes);
+    expect(codes).toEqual(validCodes.CodeList.ThemaCodes.Code);
   });
 
   it('should throw error for invalid JSON', async () => {
@@ -66,11 +64,11 @@ describe('DataLoader', () => {
 
   it('should validate hierarchy correctly', () => {
     // Valid hierarchy
-    DataLoader.validateHierarchy(validCodes);
+    DataLoader.validateHierarchy(validCodes.CodeList.ThemaCodes.Code);
     
     // Invalid hierarchy
     const invalidHierarchy = [
-      ...validCodes,
+      ...validCodes.CodeList.ThemaCodes.Code,
       {
         CodeValue: 'ABC',
         CodeDescription: 'Invalid parent',
