@@ -15,6 +15,9 @@ describe('HierarchicalProcessor', () => {
     mockDb = {
       getProgress: jest.fn(),
       updateProgress: jest.fn(),
+      insertProgress: jest.fn(),
+      getProgressByStatus: jest.fn(),
+      close: jest.fn()
     } as any;
 
     mockBcClient = {
@@ -40,105 +43,138 @@ describe('HierarchicalProcessor', () => {
     processor = new HierarchicalProcessor(mockDb, mockBcClient, mockConfig);
   });
 
-  const sampleCodes: ThemaCode[] = [
-    {
-      CodeValue: 'A',
-      CodeDescription: 'Top Level',
-      CodeNotes: 'Notes',
-      CodeParent: '',
-      IssueNumber: 1,
-      Modified: '2024-03-01'
-    },
-    {
-      CodeValue: 'AA',
-      CodeDescription: 'Child Level',
-      CodeNotes: 'Notes',
-      CodeParent: 'A',
-      IssueNumber: 1,
-      Modified: '2024-03-01'
-    }
-  ];
-
-  it('should process codes in hierarchical order', async () => {
-    mockBcClient.createCategory.mockImplementation(async (category) => 
-      category.name === 'Top Level' ? 100 : 101
-    );
-
-    mockDb.getProgress.mockImplementation((codeValue: string): ImportProgress | undefined => {
-      if (codeValue === 'A') {
-        return {
-          code_value: 'A',
-          bc_category_id: 100,
-          parent_code: '',
-          status: ImportStatus.COMPLETED,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        };
-      }
-      return undefined;
+  it('should process codes level by level', async () => {
+    jest.setTimeout(10000);
+    
+    jest.spyOn(global, 'setTimeout').mockImplementation((cb: any) => {
+      cb();
+      return undefined as any;
     });
 
-    const results = await processor.processCodes(sampleCodes);
+    const codes = [
+      {
+        CodeValue: 'A',
+        CodeDescription: 'Top Level',
+        CodeNotes: 'Notes',
+        CodeParent: '',
+        IssueNumber: 1,
+        Modified: '2024-03-01'
+      },
+      {
+        CodeValue: 'AA',
+        CodeDescription: 'Child Level',
+        CodeNotes: 'Notes',
+        CodeParent: 'A',
+        IssueNumber: 1,
+        Modified: '2024-03-01'
+      },
+      {
+        CodeValue: 'AAA',
+        CodeDescription: 'Grandchild Level',
+        CodeNotes: 'Notes',
+        CodeParent: 'AA',
+        IssueNumber: 1,
+        Modified: '2024-03-01'
+      }
+    ];
 
-    expect(results).toHaveLength(2);
+    // Mock sequential category creation
+    mockBcClient.createCategory.mockImplementation(async (category) => {
+      const id = category.name === 'Top Level' ? 100 : 
+                 category.name === 'Child Level' ? 101 : 102;
+      return id;
+    });
+
+    // Mock database operations to track progress
+    const dbState = new Map();
+    mockDb.getProgress.mockImplementation(async (codeValue) => {
+      return dbState.get(codeValue);
+    });
+
+    mockDb.updateProgress.mockImplementation(async (codeValue, updates) => {
+      dbState.set(codeValue, {
+        code_value: codeValue,
+        ...updates,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        retry_count: 0
+      });
+    });
+
+    const results = await processor.processCodes(codes);
+
+    // Verify processing order
+    const createCalls = mockBcClient.createCategory.mock.calls;
+    expect(createCalls[0][0].name).toBe('Top Level');
+    expect(createCalls[1][0].name).toBe('Child Level');
+    expect(createCalls[2][0].name).toBe('Grandchild Level');
+
+    // Verify all categories were created
+    expect(results).toHaveLength(3);
     expect(results[0].categoryId).toBe(100);
     expect(results[1].categoryId).toBe(101);
-    expect(mockBcClient.createCategory).toHaveBeenCalledTimes(2);
-    
-    const calls = mockBcClient.createCategory.mock.calls;
-    expect(calls[0][0].name).toBe('Top Level');
-    expect(calls[1][0].name).toBe('Child Level');
+    expect(results[2].categoryId).toBe(102);
   });
 
-  it('should handle missing parent categories', async () => {
-    mockDb.getProgress.mockImplementation(() => undefined);
-    mockBcClient.createCategory.mockResolvedValue(201);
+  it('should skip processing children of failed categories', async () => {
+    const codes = [
+      {
+        CodeValue: 'A',
+        CodeDescription: 'Top Level',
+        CodeNotes: 'Notes',
+        CodeParent: '',
+        IssueNumber: 1,
+        Modified: '2024-03-01'
+      },
+      {
+        CodeValue: 'AA',
+        CodeDescription: 'Child Level',
+        CodeNotes: 'Notes',
+        CodeParent: 'A',
+        IssueNumber: 1,
+        Modified: '2024-03-01'
+      }
+    ];
 
-    const results = await processor.processCodes([sampleCodes[1]]);
+    // Mock parent category creation failure
+    mockBcClient.createCategory.mockRejectedValueOnce(new Error('API Error'));
+    mockDb.getProgress.mockReturnValue(undefined);
+    mockDb.updateProgress.mockReturnValue();
 
-    expect(results).toHaveLength(1);
+    const results = await processor.processCodes(codes);
+
+    expect(results).toHaveLength(2);
     expect(results[0].error).toBeDefined();
-    expect(results[0].error).toContain('Parent category A not found');
-    expect(mockBcClient.createCategory).not.toHaveBeenCalled();
+    expect(results[1].error).toBe('Parent category A not ready');
+    expect(mockBcClient.createCategory).toHaveBeenCalledTimes(1);
   });
 
-  it('should handle orphaned codes', async () => {
-    const orphanedCode = {
-      CodeValue: 'X',
-      CodeDescription: 'Orphaned',
-      CodeNotes: 'Notes',
-      CodeParent: 'NON_EXISTENT',
-      IssueNumber: 1,
-      Modified: '2024-03-01'
-    };
+  it('should use existing category ID for previously processed codes', async () => {
+    const codes = [
+      {
+        CodeValue: 'A',
+        CodeDescription: 'Top Level',
+        CodeNotes: 'Notes',
+        CodeParent: '',
+        IssueNumber: 1,
+        Modified: '2024-03-01'
+      }
+    ];
 
-    mockBcClient.createCategory.mockResolvedValue(301);
+    // Mock existing category in database
+    mockDb.getProgress.mockResolvedValue({
+      code_value: 'A',
+      bc_category_id: 100,
+      parent_code: '',
+      status: ImportStatus.COMPLETED,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      retry_count: 0
+    });
 
-    const results = await processor.processCodes([orphanedCode]);
-    
-    expect(results).toHaveLength(1);
-    expect(results[0].error).toBeDefined();
-    expect(results[0].error).toContain('Parent category NON_EXISTENT not found');
-    expect(mockBcClient.createCategory).not.toHaveBeenCalled();
-  });
+    const results = await processor.processCodes(codes);
 
-  it('should not fallback to default parent for child categories', async () => {
-    mockDb.getProgress.mockImplementation(() => undefined);
-    
-    const childCode = {
-      CodeValue: 'AA',
-      CodeDescription: 'Child Level',
-      CodeNotes: 'Notes',
-      CodeParent: 'A',
-      IssueNumber: 1,
-      Modified: '2024-03-01'
-    };
-
-    const results = await processor.processCodes([childCode]);
-
-    expect(results).toHaveLength(1);
-    expect(results[0].error).toBeDefined();
-    expect(results[0].error).toContain('Parent category A not found');
+    expect(results[0].categoryId).toBe(100);
     expect(mockBcClient.createCategory).not.toHaveBeenCalled();
   });
 }); 

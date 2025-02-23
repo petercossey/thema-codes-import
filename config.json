@@ -6,8 +6,7 @@
   },
   "import": {
     "parentCategoryId": 24,
-    "categoryTreeId": 1,
-    "batchSize": 50
+    "categoryTreeId": 1
   },
   "mapping": {
     "name": "${CodeDescription}",

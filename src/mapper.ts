@@ -12,34 +12,46 @@ export function mapField(template: string, code: ThemaCode): string {
 }
 
 /**
- * Applies transformations to a URL path
+ * Sanitizes a string for use in URLs by:
+ * - Removing special characters
+ * - Converting to lowercase
+ * - Replacing spaces with hyphens
+ * - Removing consecutive hyphens
+ * - Trimming hyphens from start/end
  */
-export function applyUrlTransformations(path: string, transformations: string[]): string {
-  let result = path;
-
-  for (const transform of transformations) {
-    switch (transform) {
-      case 'lowercase':
-        result = result.toLowerCase();
-        break;
-      case 'replace-spaces':
-        result = result.replace(/\s+/g, '-');
-        break;
-      case 'remove-special-chars':
-        result = result.replace(/[^a-zA-Z0-9-]/g, '');
-        break;
-    }
-  }
-
-  return result;
+function sanitizeUrlSegment(str: string): string {
+  return str
+    // Convert to lowercase first
+    .toLowerCase()
+    // Replace special characters and spaces with hyphens
+    .replace(/[^a-z0-9]+/g, '-')
+    // Remove consecutive hyphens
+    .replace(/-+/g, '-')
+    // Remove leading and trailing hyphens
+    .replace(/^-+|-+$/g, '');
 }
 
 /**
- * Builds a URL path using template and transformations
+ * Builds a URL path from a template and code data
  */
-export function buildUrlPath(template: string, code: ThemaCode, transformations: string[]): string {
-  const path = mapField(template, code);
-  return applyUrlTransformations(path, transformations);
+export function buildUrlPath(template: string, code: ThemaCode, transformations: string[] = []): string {
+  // First replace template variables with values
+  let path = template.replace(/\${([^}]+)}/g, (match, field) => {
+    // Cast field to keyof ThemaCode to ensure type safety
+    const value = code[field as keyof ThemaCode]?.toString() || '';
+    // Sanitize URL segments individually before any other transformations
+    return field === 'CodeDescription' ? sanitizeUrlSegment(value) : value;
+  });
+
+  // Apply additional transformations
+  if (transformations.includes('lowercase')) {
+    path = path.toLowerCase();
+  }
+  if (transformations.includes('replace-spaces')) {
+    path = path.replace(/\s+/g, '-');
+  }
+
+  return path;
 }
 
 /**
@@ -51,16 +63,18 @@ export function mapThemaToCategory(
   treeId: number,
   parentId?: number,
 ): BigCommerceCategory {
+  // Validate parent_id if provided
+  if (parentId && parentId <= 0) {
+    throw new Error(`Invalid parent_id: ${parentId}`);
+  }
+
   const category: BigCommerceCategory = {
     name: mapField(config.name, code),
     description: mapField(config.description, code),
     is_visible: config.is_visible,
     tree_id: treeId,
+    parent_id: parentId || undefined // Explicitly set parent_id
   };
-
-  if (parentId) {
-    category.parent_id = parentId;
-  }
 
   if (config.url) {
     category.url = {

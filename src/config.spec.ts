@@ -11,8 +11,7 @@ describe('ConfigLoader', () => {
       apiVersion: 'v3'
     },
     import: {
-      categoryTreeId: 1,
-      batchSize: 50
+      categoryTreeId: 1
     },
     mapping: {
       name: '${CodeDescription}',

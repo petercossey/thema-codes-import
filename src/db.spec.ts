@@ -40,7 +40,11 @@ describe('DatabaseManager', () => {
     const progress = {
       code_value: 'ABA',
       parent_code: '',
-      status: ImportStatus.PENDING
+      status: ImportStatus.PENDING,
+      retry_count: 0,
+      bc_category_id: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     };
 
     db.insertProgress(progress);

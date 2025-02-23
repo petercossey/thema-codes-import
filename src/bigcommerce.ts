@@ -6,13 +6,13 @@ import logger from './utils/logger';
  * Manages rate limiting for API calls
  */
 class RateLimiter {
-  private queue: Array<() => Promise<void>> = [];
+  private queue: Array<() => Promise<any>> = [];
   private processing = false;
   private lastCallTime = 0;
-  private readonly minInterval = 200; // 5 calls per second = 200ms between calls
+  private readonly minInterval = 250; // 4 calls per second = 250ms between calls
 
   async add<T>(fn: () => Promise<T>): Promise<T> {
-    return new Promise((resolve, reject) => {
+    return new Promise<T>((resolve, reject) => {
       this.queue.push(async () => {
         try {
           const result = await fn();
@@ -23,32 +23,36 @@ class RateLimiter {
       });
       
       if (!this.processing) {
-        this.processQueue();
+        void this.processQueue();
       }
     });
   }
 
   private async processQueue() {
-    if (this.queue.length === 0) {
-      this.processing = false;
-      return;
-    }
-
-    this.processing = true;
-    const now = Date.now();
-    const timeToWait = Math.max(0, this.minInterval - (now - this.lastCallTime));
+    if (this.processing) return;
     
-    if (timeToWait > 0) {
-      await new Promise(resolve => setTimeout(resolve, timeToWait));
+    this.processing = true;
+    
+    while (this.queue.length > 0) {
+      const now = Date.now();
+      const timeToWait = Math.max(0, this.minInterval - (now - this.lastCallTime));
+      
+      if (timeToWait > 0) {
+        await new Promise(resolve => setTimeout(resolve, timeToWait));
+      }
+
+      const fn = this.queue.shift();
+      if (fn) {
+        this.lastCallTime = Date.now();
+        try {
+          await fn();
+        } catch (error) {
+          logger.error('Error processing queue item:', error);
+        }
+      }
     }
 
-    const fn = this.queue.shift();
-    if (fn) {
-      this.lastCallTime = Date.now();
-      await fn();
-    }
-
-    await this.processQueue();
+    this.processing = false;
   }
 }
 
@@ -56,6 +60,7 @@ interface BigCommerceError {
   title?: string;
   status?: number;
   errors?: Record<string, string[]>;
+  detail?: string;
 }
 
 interface BigCommerceResponse {
@@ -88,25 +93,41 @@ export class BigCommerceClient {
    */
   async createCategory(category: BigCommerceCategory, retries = 5): Promise<number> {
     const makeRequest = async () => {
-      const response = await fetch(
-        `${this.baseUrl}/catalog/trees/categories`,
-        {
-          method: 'POST',
-          headers: this.headers,
-          body: JSON.stringify([category])
+      try {
+        const response = await fetch(
+          `${this.baseUrl}/catalog/trees/categories`,
+          {
+            method: 'POST',
+            headers: this.headers,
+            body: JSON.stringify([category])
+          }
+        );
+
+        if (!response.ok) {
+          const error = await response.json() as BigCommerceError;
+          const errorDetails = error.errors ? 
+            Object.entries(error.errors).map(([k, v]) => `${k}: ${v.join(', ')}`).join('; ') : 
+            error.detail || error.title;
+          
+          throw new Error(`BigCommerce API error (${response.status}): ${errorDetails}`);
         }
-      );
 
-      if (!response.ok) {
-        const error = await response.json() as BigCommerceError;
-        throw new Error(`BigCommerce API error: ${error.title || response.statusText}`);
-      }
+        const result = await response.json() as BigCommerceResponse;
+        if (!result.data?.[0]?.category_id) {
+          throw new Error('Invalid response format from BigCommerce API');
+        }
+        
+        logger.info(`Successfully created category "${category.name}" with ID ${result.data[0].category_id}`);
+        return result.data[0].category_id;
 
-      const result = await response.json() as BigCommerceResponse;
-      if (!result.data?.[0]?.category_id) {
-        throw new Error('Invalid response format from BigCommerce API');
+      } catch (error) {
+        logger.error('Error creating category:', {
+          categoryName: category.name,
+          parentId: category.parent_id,
+          error: error instanceof Error ? error.message : String(error)
+        });
+        throw error;
       }
-      return result.data[0].category_id;
     };
 
     return this.retryWithBackoff(

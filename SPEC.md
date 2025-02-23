@@ -30,8 +30,7 @@ thema-import --config=config.json --source=thema-codes.json
   },
   "import": {
     "parentCategoryId": 42,
-    "categoryTreeId": 1,
-    "batchSize": 50
+    "categoryTreeId": 1
   },
   "mapping": {
     "name": "${CodeDescription}",

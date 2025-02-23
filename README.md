@@ -46,8 +46,7 @@ The configuration file (config.json) should contain:
   },
   "import": {
     "parentCategoryId": 42,
-    "categoryTreeId": 1,
-    "batchSize": 50
+    "categoryTreeId": 1
   },
   "mapping": {
     "name": "${CodeDescription}",

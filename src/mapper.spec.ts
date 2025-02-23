@@ -1,4 +1,4 @@
-import { mapField, buildUrlPath, mapThemaToCategory, applyUrlTransformations } from './mapper';
+import { mapField, buildUrlPath, mapThemaToCategory } from './mapper';
 import { ThemaCode } from './types/thema';
 import { MappingConfig } from './types/config';
 
@@ -23,27 +23,6 @@ describe('Mapper', () => {
       const template = '${NonexistentField}';
       const result = mapField(template, sampleCode);
       expect(result).toBe('');
-    });
-  });
-
-  describe('applyUrlTransformations', () => {
-    it('should apply lowercase transformation', () => {
-      const result = applyUrlTransformations('Theory of Art', ['lowercase']);
-      expect(result).toBe('theory of art');
-    });
-
-    it('should apply replace-spaces transformation', () => {
-      const result = applyUrlTransformations('Theory of Art', ['replace-spaces']);
-      expect(result).toBe('Theory-of-Art');
-    });
-
-    it('should apply multiple transformations in order', () => {
-      const result = applyUrlTransformations('Theory of Art!', [
-        'lowercase',
-        'replace-spaces',
-        'remove-special-chars'
-      ]);
-      expect(result).toBe('theory-of-art');
     });
   });
 
@@ -85,6 +64,46 @@ describe('Mapper', () => {
     it('should include parent_id when provided', () => {
       const result = mapThemaToCategory(sampleCode, config, 1, 42);
       expect(result.parent_id).toBe(42);
+    });
+  });
+
+  describe('URL sanitization', () => {
+    const config: MappingConfig = {
+      name: '${CodeDescription}',
+      description: '<p>${CodeNotes}</p>',
+      is_visible: true,
+      url: {
+        path: '/${CodeValue}/${CodeDescription}/',
+        transformations: ['lowercase']
+      }
+    };
+
+    it('should sanitize special characters in CodeDescription', () => {
+      const codeWithSpecialChars: ThemaCode = {
+        CodeValue: 'ABC',
+        CodeDescription: 'Art & Design: Theory (2024)',
+        CodeNotes: 'Test notes',
+        CodeParent: '',
+        IssueNumber: 1,
+        Modified: 1.0
+      };
+
+      const result = mapThemaToCategory(codeWithSpecialChars, config, 1);
+      expect(result.url?.path).toBe('/abc/art-design-theory-2024/');
+    });
+
+    it('should handle multiple consecutive special characters', () => {
+      const codeWithMultipleSpecialChars: ThemaCode = {
+        CodeValue: 'ABC',
+        CodeDescription: 'Art   &   Design:::Theory',
+        CodeNotes: 'Test notes',
+        CodeParent: '',
+        IssueNumber: 1,
+        Modified: 1.0
+      };
+
+      const result = mapThemaToCategory(codeWithMultipleSpecialChars, config, 1);
+      expect(result.url?.path).toBe('/abc/art-design-theory/');
     });
   });
 }); 

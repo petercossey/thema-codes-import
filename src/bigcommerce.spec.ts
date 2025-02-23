@@ -87,7 +87,7 @@ describe('BigCommerceClient', () => {
       ]);
 
       const duration = Date.now() - start;
-      expect(duration).toBeGreaterThanOrEqual(800); // At least 4 intervals of 200ms
+      expect(duration).toBeGreaterThanOrEqual(1000); // At least 4 intervals of 250ms
       expect(mockFetch).toHaveBeenCalledTimes(5);
     });
 

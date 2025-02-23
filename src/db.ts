@@ -83,13 +83,17 @@ export class DatabaseManager {
       // Add WHERE clause value
       values.push(codeValue);
 
-      const stmt = this.db.prepare(`
+      const query = `
         UPDATE import_progress
         SET ${sets.join(', ')}
         WHERE code_value = ?
-      `);
+      `;
 
-      stmt.run(...values);
+      // Execute as a single transaction
+      this.db.transaction(() => {
+        const stmt = this.db.prepare(query);
+        stmt.run(...values);
+      })();
     } catch (error) {
       logger.error(`Failed to update progress for code ${codeValue}:`, error);
       throw error;

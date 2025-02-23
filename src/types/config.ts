@@ -10,8 +10,7 @@ export const BigCommerceConfigSchema = z.object({
 // Zod schema for import config
 export const ImportConfigSchema = z.object({
   parentCategoryId: z.number().optional(),
-  categoryTreeId: z.number(),
-  batchSize: z.number().default(50)
+  categoryTreeId: z.number()
 });
 
 // Zod schema for URL transformations
