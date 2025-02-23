@@ -91,18 +91,15 @@ describe('HierarchicalProcessor', () => {
   });
 
   it('should handle missing parent categories', async () => {
-    mockDb.getProgress.mockImplementation((codeValue: string): ImportProgress | undefined => undefined);
-    mockBcClient.createCategory.mockResolvedValue(201); // Mock successful category creation
+    mockDb.getProgress.mockImplementation(() => undefined);
+    mockBcClient.createCategory.mockResolvedValue(201);
 
     const results = await processor.processCodes([sampleCodes[1]]);
 
     expect(results).toHaveLength(1);
-    expect(results[0].categoryId).toBe(201);
-    expect(mockBcClient.createCategory).toHaveBeenCalledWith(
-      expect.objectContaining({
-        parent_id: mockConfig.import.parentCategoryId // Should use default parent
-      })
-    );
+    expect(results[0].error).toBeDefined();
+    expect(results[0].error).toContain('Parent category A not found');
+    expect(mockBcClient.createCategory).not.toHaveBeenCalled();
   });
 
   it('should handle orphaned codes', async () => {
@@ -120,11 +117,28 @@ describe('HierarchicalProcessor', () => {
     const results = await processor.processCodes([orphanedCode]);
     
     expect(results).toHaveLength(1);
-    expect(results[0].categoryId).toBe(301);
-    expect(mockBcClient.createCategory).toHaveBeenCalledWith(
-      expect.objectContaining({
-        parent_id: mockConfig.import.parentCategoryId
-      })
-    );
+    expect(results[0].error).toBeDefined();
+    expect(results[0].error).toContain('Parent category NON_EXISTENT not found');
+    expect(mockBcClient.createCategory).not.toHaveBeenCalled();
+  });
+
+  it('should not fallback to default parent for child categories', async () => {
+    mockDb.getProgress.mockImplementation(() => undefined);
+    
+    const childCode = {
+      CodeValue: 'AA',
+      CodeDescription: 'Child Level',
+      CodeNotes: 'Notes',
+      CodeParent: 'A',
+      IssueNumber: 1,
+      Modified: '2024-03-01'
+    };
+
+    const results = await processor.processCodes([childCode]);
+
+    expect(results).toHaveLength(1);
+    expect(results[0].error).toBeDefined();
+    expect(results[0].error).toContain('Parent category A not found');
+    expect(mockBcClient.createCategory).not.toHaveBeenCalled();
   });
 }); 
