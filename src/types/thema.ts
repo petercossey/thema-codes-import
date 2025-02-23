@@ -10,8 +10,8 @@ export const ThemaCodeSchema = z.object({
   Modified: z.union([z.string(), z.number()])
 });
 
-// TypeScript type derived from schema
-export type ThemaCode = z.infer<typeof ThemaCodeSchema>;
-
 // Schema for array of Thema codes
-export const ThemaCodesSchema = z.array(ThemaCodeSchema); 
+export const ThemaCodesSchema = z.array(ThemaCodeSchema);
+
+// TypeScript type derived from schema
+export type ThemaCode = z.infer<typeof ThemaCodeSchema>; 

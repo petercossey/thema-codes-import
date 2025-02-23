@@ -24,7 +24,7 @@ export const UrlConfigSchema = z.object({
 export const MappingConfigSchema = z.object({
   name: z.string(),
   description: z.string(),
-  url: UrlConfigSchema,
+  url: UrlConfigSchema.optional(),
   is_visible: z.boolean().default(true)
 });
 

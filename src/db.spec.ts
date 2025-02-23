@@ -4,22 +4,27 @@ import { join } from 'path';
 import { unlink, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import { rm } from 'fs/promises';
+import { dirname } from 'path';
 
 describe('DatabaseManager', () => {
-  const testDir = join(__dirname, '../test-temp');
-  const testDbPath = join(testDir, 'test.db');
+  const dbPath = join(__dirname, '../test-temp/test.db');
   let db: DatabaseManager;
 
+  beforeAll(async () => {
+    // Ensure the directory exists before creating the database
+    await mkdir(dirname(dbPath), { recursive: true });
+  });
+
   beforeEach(async () => {
-    // Ensure test directory exists
-    await mkdir(testDir, { recursive: true });
-    
     // Remove test database if it exists
-    if (existsSync(testDbPath)) {
-      await unlink(testDbPath);
+    if (existsSync(dbPath)) {
+      await unlink(dbPath);
     }
 
-    db = new DatabaseManager(testDbPath);
+    // Wait for the directory to be ready before creating the database
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    db = new DatabaseManager(dbPath);
   });
 
   afterEach(() => {
@@ -29,16 +34,17 @@ describe('DatabaseManager', () => {
   });
 
   afterAll(async () => {
-    if (existsSync(testDbPath)) {
-      await unlink(testDbPath);
+    // Clean up by removing the test database if it exists
+    try {
+      await unlink(dbPath);
+    } catch (error) {
+      // Ignore errors if file doesn't exist
     }
-    // Clean up test directory
-    await rm(testDir, { recursive: true, force: true });
   });
 
-  it('should initialize database with required table and indexes', () => {
-    // If no error is thrown during initialization, the test passes
-    expect(() => new DatabaseManager(testDbPath)).not.toThrow();
+  it('should initialize database with required table and indexes', async () => {
+    // Make this test async and await the database creation
+    await expect(async () => new DatabaseManager(dbPath)).not.toThrow();
   });
 
   it('should insert and retrieve progress record', () => {
