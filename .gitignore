@@ -31,3 +31,4 @@ coverage/
 error.log
 combined.log
 import-progress.db 
+config.json

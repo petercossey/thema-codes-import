@@ -1,0 +1,26 @@
+{
+    "bigcommerce": {
+      "storeHash": "xyz1234",
+      "apiToken": "abc1234",
+      "apiVersion": "v3"
+    },
+    "import": {
+      "parentCategoryId": 24,
+      "categoryTreeId": 1
+    },
+    "mapping": {
+      "name": "${CodeDescription}",
+      "description": "<p>${CodeNotes}</p>",
+      "url": {
+        "path": "/${CodeValue}/${CodeDescription}/",
+        "transformations": ["lowercase", "replace-spaces"]
+      },
+      "is_visible": true
+    },
+    "database": "import-progress.db",
+    "logging": {
+      "level": "debug",
+      "file": "import.log"
+    }
+  }
+  
