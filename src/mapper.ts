@@ -68,12 +68,16 @@ export function mapThemaToCategory(
     throw new Error(`Invalid parent_id: ${parentId}`);
   }
 
+  // Truncate name to 50 characters if needed
+  const name = mapField(config.name, code);
+  const truncatedName = name.length > 50 ? name.substring(0, 47) + '...' : name;
+
   const category: BigCommerceCategory = {
-    name: mapField(config.name, code),
+    name: truncatedName,
     description: mapField(config.description, code),
     is_visible: config.is_visible,
     tree_id: treeId,
-    parent_id: parentId || undefined // Explicitly set parent_id
+    parent_id: parentId || undefined
   };
 
   if (config.url) {

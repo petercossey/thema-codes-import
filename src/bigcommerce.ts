@@ -106,7 +106,9 @@ export class BigCommerceClient {
         if (!response.ok) {
           const error = await response.json() as BigCommerceError;
           const errorDetails = error.errors ? 
-            Object.entries(error.errors).map(([k, v]) => `${k}: ${v.join(', ')}`).join('; ') : 
+            Object.entries(error.errors)
+              .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`)
+              .join('; ') : 
             error.detail || error.title;
           
           throw new Error(`BigCommerce API error (${response.status}): ${errorDetails}`);
