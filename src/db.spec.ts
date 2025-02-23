@@ -5,40 +5,29 @@ import { unlink, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import { rm } from 'fs/promises';
 import { dirname } from 'path';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
 
 describe('DatabaseManager', () => {
-  const dbPath = join(__dirname, '../test-temp/test.db');
+  let dbPath: string;
   let db: DatabaseManager;
 
-  beforeAll(async () => {
-    // Ensure the directory exists before creating the database
-    await mkdir(dirname(dbPath), { recursive: true });
-  });
-
-  beforeEach(async () => {
-    // Remove test database if it exists
-    if (existsSync(dbPath)) {
-      await unlink(dbPath);
-    }
-
-    // Wait for the directory to be ready before creating the database
-    await new Promise(resolve => setTimeout(resolve, 100));
+  beforeEach(() => {
+    // Create a temporary directory for the test database
+    const testDir = path.join(os.tmpdir(), 'thema-import-test');
+    fs.mkdirSync(testDir, { recursive: true });
     
+    // Use a unique database file for each test
+    dbPath = path.join(testDir, `test-${Date.now()}.db`);
     db = new DatabaseManager(dbPath);
   });
 
   afterEach(() => {
-    if (db) {
-      db.close();
-    }
-  });
-
-  afterAll(async () => {
-    // Clean up by removing the test database if it exists
-    try {
-      await unlink(dbPath);
-    } catch (error) {
-      // Ignore errors if file doesn't exist
+    // Clean up the database file
+    db.close();
+    if (fs.existsSync(dbPath)) {
+      fs.unlinkSync(dbPath);
     }
   });
 

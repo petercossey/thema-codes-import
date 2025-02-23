@@ -6,6 +6,7 @@ import logger from './utils/logger';
 import { ConfigLoader } from './config';
 import { DataLoader } from './data-loader';
 import { DatabaseManager } from './db';
+import { BigCommerceClient } from './bigcommerce';
 
 async function validateFilePath(path: string): Promise<void> {
   try {
@@ -17,6 +18,7 @@ async function validateFilePath(path: string): Promise<void> {
 
 async function main() {
   let db: DatabaseManager | undefined;
+  let bcClient: BigCommerceClient | undefined;
   
   try {
     // Parse command line arguments
@@ -50,12 +52,16 @@ async function main() {
     db = new DatabaseManager(config.database);
     logger.info('Database initialized successfully');
 
+    // Initialize BigCommerce client
+    bcClient = new BigCommerceClient(config.bigcommerce);
+    logger.info('BigCommerce client initialized successfully');
+
     // Load and validate Thema codes
     const themaCodes = await DataLoader.loadThemaCodes(argv.source);
     DataLoader.validateHierarchy(themaCodes);
     logger.info(`Loaded ${themaCodes.length} Thema codes successfully`);
 
-    // TODO: Process Thema codes and create categories
+    // TODO: Process Thema codes and create categories using bcClient
     
   } catch (error) {
     logger.error('Error in main process:', error);
