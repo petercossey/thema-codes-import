@@ -8,6 +8,7 @@ import { DataLoader } from './data-loader';
 import { DatabaseManager } from './db';
 import { BigCommerceClient } from './bigcommerce';
 import { HierarchicalProcessor } from './processor';
+import { ImportStatus } from './types/database';
 
 async function validateFilePath(path: string): Promise<void> {
   try {
@@ -68,7 +69,7 @@ async function main() {
     // Process codes hierarchically
     const results = await processor.processCodes(themaCodes);
     
-    // Log results
+    // Generate detailed report
     const successful = results.filter(r => r.categoryId).length;
     const failed = results.filter(r => r.error).length;
     
@@ -77,13 +78,26 @@ async function main() {
     if (failed > 0) {
       logger.warn('Failed imports:', results.filter(r => r.error));
     }
-    
+
+    // Output final statistics
+    const pendingCount = (await db.getProgressByStatus(ImportStatus.PENDING)).length;
+    logger.info('Import statistics:', {
+      total: themaCodes.length,
+      successful,
+      failed,
+      pending: pendingCount
+    });
+
   } catch (error) {
     logger.error('Error in main process:', error);
-    process.exit(1);
+    // Only exit the process if we're running the script directly
+    if (require.main === module) {
+      process.exit(1);
+    }
+    throw error;  // Re-throw the error for testing environments
   } finally {
     if (db) {
-      db.close();
+      await db.close();
     }
   }
 }

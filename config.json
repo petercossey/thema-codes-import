@@ -1,0 +1,26 @@
+{
+  "bigcommerce": {
+    "storeHash": "zhznfgs9up",
+    "apiToken": "iszlnrwn4mvw5gmnz4o411qe52rx5sz",
+    "apiVersion": "v3"
+  },
+  "import": {
+    "parentCategoryId": 24,
+    "categoryTreeId": 1,
+    "batchSize": 50
+  },
+  "mapping": {
+    "name": "${CodeDescription}",
+    "description": "<p>${CodeNotes}</p>",
+    "url": {
+      "path": "/${CodeValue}/${CodeDescription}/",
+      "transformations": ["lowercase", "replace-spaces"]
+    },
+    "is_visible": true
+  },
+  "database": "import-progress.db",
+  "logging": {
+    "level": "debug",
+    "file": "import.log"
+  }
+}

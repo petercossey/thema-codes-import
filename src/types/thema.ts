@@ -16,15 +16,6 @@ export const ThemaCodesSchema = z.array(ThemaCodeSchema);
 // TypeScript type derived from schema
 export type ThemaCode = z.infer<typeof ThemaCodeSchema>;
 
-export interface ThemaCode {
-  CodeValue: string;
-  CodeDescription: string;
-  CodeNotes: string;
-  CodeParent: string;
-  IssueNumber: number;
-  Modified: string | number;
-}
-
 export interface ProcessingResult {
   codeValue: string;
   categoryId?: number;
