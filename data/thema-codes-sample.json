@@ -1,0 +1,260 @@
+{
+    "CodeList": {
+        "CodeListNumber": 214,
+        "CodeListDescription": "Thema Subject Codes",
+        "IssueNumber": 1.6,
+        "VersionNumber": "v1.6.0",
+        "IssueDate": {
+            "dateformat": "YYYYMMDD",
+            "#text": 20241031
+        },
+        "LastUpdated": {
+            "dateformat": "YYYYMMDD",
+            "#text": 20241031
+        },
+        "ThemaCodes": {
+            "Code": [
+                {
+                    "CodeValue": "A",
+                    "CodeDescription": "The Arts",
+                    "CodeNotes": "Use all A* codes for: specialist and general adult titles, including both highly illustrated and more text-based works. For a hobby or recreational approach. Prefer: a WF* code as the main subject and supplement with A* code(s) where appropriate. Use all A* codes with: other subject categories and qualifiers as appropriate, in particular STYLE 6*, plus PLACE 1* and TIME PERIOD 3* Qualifiers",
+                    "CodeParent": "",
+                    "IssueNumber": 1,
+                    "Modified": 1.4
+                },
+                {
+                    "CodeValue": "AB",
+                    "CodeDescription": "The arts: general topics",
+                    "CodeNotes": "",
+                    "CodeParent": "A",
+                    "IssueNumber": 1,
+                    "Modified": 1.5
+                },
+                {
+                    "CodeValue": "ABA",
+                    "CodeDescription": "Theory of art",
+                    "CodeNotes": "See also: QDTN",
+                    "CodeParent": "AB",
+                    "IssueNumber": 1,
+                    "Modified": ""
+                },
+                {
+                    "CodeValue": "ABC",
+                    "CodeDescription": "Conservation, restoration and care of artworks",
+                    "CodeNotes": "Use with: other A* codes for works about the conservation, preservation, renovation, restoration or care of any type of art, including buildings, structures, sculptures, photos, paintings, decorative arts, etc",
+                    "CodeParent": "AB",
+                    "IssueNumber": 1,
+                    "Modified": 1.5
+                },
+                {
+                    "CodeValue": "ABK",
+                    "CodeDescription": "Forgery, falsification and theft of artworks",
+                    "CodeNotes": "",
+                    "CodeParent": "AB",
+                    "IssueNumber": 1,
+                    "Modified": ""
+                },
+                {
+                    "CodeValue": "ABQ",
+                    "CodeDescription": "Art: financial aspects",
+                    "CodeNotes": "Also class here: art sales and auctioneering, funding, patronage and sponsorship, curated sales, the Crypto art NFT market, the blockchain art market, art as a financial investment or speculation, commercial value of art, the business of art",
+                    "CodeParent": "AB",
+                    "IssueNumber": 1,
+                    "Modified": 1.5
+                },
+                {
+                    "CodeValue": "AF",
+                    "CodeDescription": "The Arts: art forms",
+                    "CodeNotes": "Use for: works on the fine, visual and applied arts. Use all AF* codes with: the relevant AG* code(s), AGA for History of art and artworks, AGZ for specialist works about technique, and STYLE Qualifiers 6* as appropriate. Prefer: WF* codes as the main subject for more amateur, hobby or recreational approaches, See also: WF*",
+                    "CodeParent": "A",
+                    "IssueNumber": 1,
+                    "Modified": 1.4
+                },
+                {
+                    "CodeValue": "AFC",
+                    "CodeDescription": "Paintings and painting",
+                    "CodeNotes": "Also class here: painting or paintings in general, or in any medium with no more specific category below. Use all AFC* codes for: works about a painting or paintings, by individuals or groups, including the history of particular paintings, or a particular style of painting. Use with: STYLE 6* Qualifiers as appropriate, AGA for History of artworks, AGB for monographs of painters, AGZ for specialist works about technique, etc. Prefer: WF* codes as the main subject for more amateur, hobby or recreational approaches, See also: WF*",
+                    "CodeParent": "AF",
+                    "IssueNumber": 1,
+                    "Modified": 1.4
+                },
+                {
+                    "CodeValue": "AFCC",
+                    "CodeDescription": "Paintings and painting in watercolours or pastels",
+                    "CodeNotes": "Also class here: gouache",
+                    "CodeParent": "AFC",
+                    "IssueNumber": 1,
+                    "Modified": 1.4
+                },
+                {
+                    "CodeValue": "AFCL",
+                    "CodeDescription": "Paintings and painting in oils",
+                    "CodeNotes": "Also class here: acrylic paintings and painting",
+                    "CodeParent": "AFC",
+                    "IssueNumber": 1,
+                    "Modified": 1.5
+                },
+                {
+                    "CodeValue": "AFCM",
+                    "CodeDescription": "Murals and wall paintings",
+                    "CodeNotes": "Also class here: trompe l’oeil, frescos, ceiling paintings, muralism, marouflage",
+                    "CodeParent": "AFC",
+                    "IssueNumber": 1.3,
+                    "Modified": 1.4
+                },
+                {
+                    "CodeValue": "AFCP",
+                    "CodeDescription": "Paintings and painting in ink",
+                    "CodeNotes": "Also class here: ink wash, See also: AFFK",
+                    "CodeParent": "AFC",
+                    "IssueNumber": 1.4,
+                    "Modified": ""
+                },
+                {
+                    "CodeValue": "AFF",
+                    "CodeDescription": "Drawing and drawings",
+                    "CodeNotes": "Also class here: sketches. Use all AFF* codes for: works about a drawing or drawings, by individual artists or groups, including the history of particular drawings, or a particular style or technique of drawing. Use with: STYLE 6* Qualifiers as appropriate, AGA for History of artworks, AGB for monographs of artists, AGZ for specialist works about technique. Prefer: WF* codes as the main subject for more amateur, hobby or recreational approaches, See also: WF*",
+                    "CodeParent": "AF",
+                    "IssueNumber": 1,
+                    "Modified": 1.4
+                },
+                {
+                    "CodeValue": "AFFC",
+                    "CodeDescription": "Drawing and drawings in pencil, charcoal, crayon or pastel",
+                    "CodeNotes": "Also class here: graphite, chalk, conté",
+                    "CodeParent": "AFF",
+                    "IssueNumber": 1.4,
+                    "Modified": ""
+                },
+                {
+                    "CodeValue": "AFFK",
+                    "CodeDescription": "Drawing and drawings in pen or brush and ink",
+                    "CodeNotes": "See also: AFCP",
+                    "CodeParent": "AFF",
+                    "IssueNumber": 1.4,
+                    "Modified": ""
+                },
+                {
+                    "CodeValue": "AFH",
+                    "CodeDescription": "Prints and printmaking",
+                    "CodeNotes": "Also class here: etchings, silk screens, screenprints, woodcuts, lithographs, line engravings, aquatints, dry point, mezzotints, monotypes, woodblocks",
+                    "CodeParent": "AF",
+                    "IssueNumber": 1,
+                    "Modified": 1.4
+                },
+                {
+                    "CodeValue": "AFJ",
+                    "CodeDescription": "Other graphic or visual art forms",
+                    "CodeNotes": "Also class here: collage, photomontage. Use for: general works or art forms that do not have a specific code in AFC*, AFF* or AFH*",
+                    "CodeParent": "AF",
+                    "IssueNumber": 1,
+                    "Modified": 1.4
+                },
+                {
+                    "CodeValue": "AFJY",
+                    "CodeDescription": "Body art and tattoos",
+                    "CodeNotes": "Also class here: body piercing, body painting as art. Use with: AFKP for performance art",
+                    "CodeParent": "AFJ",
+                    "IssueNumber": 1.4,
+                    "Modified": ""
+                },
+                {
+                    "CodeValue": "AFK",
+                    "CodeDescription": "Non-graphic and electronic art forms",
+                    "CodeNotes": "Use for: general works on non-graphic forms of art, or art using forms not listed below, including newer forms of media",
+                    "CodeParent": "AF",
+                    "IssueNumber": 1,
+                    "Modified": 1.4
+                },
+                {
+                    "CodeValue": "AFKB",
+                    "CodeDescription": "Sculpture",
+                    "CodeNotes": "Also class here: statues, figurines, monumental sculpture. Use for: works about three-dimensional art made in any material, and for works about the art form, or associated traditions and techniques",
+                    "CodeParent": "AFK",
+                    "IssueNumber": 1,
+                    "Modified": 1.4
+                },
+                {
+                    "CodeValue": "AFKC",
+                    "CodeDescription": "Carvings, masks, reliefs",
+                    "CodeNotes": "Also class here: petroglyphs, small-scale and monumental carvings, stone carvings, carved visual motifs, gargoyles, grotesques, chimera, mascaron, sculpted rock reliefs. Use for: both the technique and works about specific carved objects or carved designs in any material",
+                    "CodeParent": "AFK",
+                    "IssueNumber": 1,
+                    "Modified": 1.6
+                },
+                {
+                    "CodeValue": "AFKG",
+                    "CodeDescription": "Precious metal, precious stones and jewellery: artworks and design",
+                    "CodeNotes": "Also class here: goldsmithing and silversmithing, Fabergé, arts using jewels and precious gems or metals, Toreutics, etc, See also: WFJ WCP WCR WFP",
+                    "CodeParent": "AFK",
+                    "IssueNumber": 1,
+                    "Modified": 1.6
+                },
+                {
+                    "CodeValue": "AFKN",
+                    "CodeDescription": "Installation art",
+                    "CodeNotes": "Also class here: land art, site-specific art, environmental art",
+                    "CodeParent": "AFK",
+                    "IssueNumber": 1,
+                    "Modified": 1.4
+                },
+                {
+                    "CodeValue": "AFKP",
+                    "CodeDescription": "Performance art",
+                    "CodeNotes": "",
+                    "CodeParent": "AFK",
+                    "IssueNumber": 1,
+                    "Modified": ""
+                },
+                {
+                    "CodeValue": "AFKV",
+                    "CodeDescription": "Digital, video and new media arts",
+                    "CodeNotes": "Also class here: computer, electronic, holographic, virtual, cyborg, interactive, internet, generative, telematic, sound and evolutionary arts, crypto art, video game art, software art, internet aesthetics in the arts, digital visual arts, synthetic media, AI-generated media as art, crypto arts, crypto artists, deepfakes as artworks, artificial intelligence art, algorithmic art. Use for: all works about any of the arts using digital technologies, See also: UG*",
+                    "CodeParent": "AFK",
+                    "IssueNumber": 1,
+                    "Modified": 1.5
+                },
+                {
+                    "CodeValue": "AFP",
+                    "CodeDescription": "Ceramics, mosaic and glass: artworks",
+                    "CodeNotes": "Also class here: pottery (including porcelain, bone china, earthenware, terracotta, stoneware, bisque), stained glass, enamelled or painted glass, overglaze decoration, tiles, or enamelwork as artworks, See also: WFN",
+                    "CodeParent": "AF",
+                    "IssueNumber": 1,
+                    "Modified": 1.6
+                },
+                {
+                    "CodeValue": "AFT",
+                    "CodeDescription": "Decorative arts",
+                    "CodeNotes": "Also class here: ornament, ornamental motifs, decorative details, patterns or shapes, faux painting or finishing, decorative metalwork, repoussé, chasing, embossing, metal-engraving techniques, lacquerware, wallpapers and other decorative arts. Use for: works that look at the subject from a fine arts or history of art perspective, or aimed at a more professional, technical or skilled audience, See also: WF*",
+                    "CodeParent": "AF",
+                    "IssueNumber": 1,
+                    "Modified": 1.5
+                },
+                {
+                    "CodeValue": "AFW",
+                    "CodeDescription": "Textile arts and artworks",
+                    "CodeNotes": "Also class here: carpets, kilims, rugs, quilts, tapestries, appliqué techniques, wall-hangings, weavings, knitting, patchwork, embroidery, beadwork, quillwork, featherwork, feltwork, ribbon work, and other textiles or textile embellishments as art. Use for: works about any arts or crafts that use plant, animal or synthetic fibres to construct practical, decorative, utilitarian, ceremonial, or conceptual objects or artworks, See also: AKT WFB* WFF WFG",
+                    "CodeParent": "AF",
+                    "IssueNumber": 1,
+                    "Modified": 1.6
+                },
+                {
+                    "CodeValue": "AG",
+                    "CodeDescription": "The visual, decorative or fine arts: treatments and subjects",
+                    "CodeNotes": "Use all AG* codes for: works on the fine, visual and applied arts and for the arts of specific cultures, societies, groups, peoples, places, movements, etc. Use all AG* codes with: the relevant AB*, AF*, AG*, AJ*, AK*, AM*, AT*, AV* code(s) and also STYLE 6*, PLACE 1*, INTEREST 5* and TIME PERIOD 3* Qualifiers as appropriate",
+                    "CodeParent": "A",
+                    "IssueNumber": 1,
+                    "Modified": 1.6
+                },
+                {
+                    "CodeValue": "AGA",
+                    "CodeDescription": "History of art",
+                    "CodeNotes": "Use for: History of specific art movements, periods of arts, or the history of the arts of specific cultures, societies, groups, peoples, places, etc. Use with: other Arts codes A* and also STYLE 6*, PLACE 1*, INTEREST 5* and TIME PERIOD 3* Qualifiers as appropriate",
+                    "CodeParent": "AG",
+                    "IssueNumber": 1,
+                    "Modified": 1.6
+                }
+            ]
+        }
+    }
+}
