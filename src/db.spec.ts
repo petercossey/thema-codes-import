@@ -42,7 +42,7 @@ describe('DatabaseManager', () => {
       parent_code: '',
       status: ImportStatus.PENDING,
       retry_count: 0,
-      bc_category_id: null,
+      bc_category_id: undefined,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -61,7 +61,8 @@ describe('DatabaseManager', () => {
     const progress = {
       code_value: 'ABA',
       parent_code: '',
-      status: ImportStatus.PENDING
+      status: ImportStatus.PENDING,
+      retry_count: 0
     };
 
     db.insertProgress(progress);
@@ -85,7 +86,8 @@ describe('DatabaseManager', () => {
       db.insertProgress({
         code_value: code,
         parent_code: code === 'ABA' ? '' : 'ABA',
-        status: ImportStatus.PENDING
+        status: ImportStatus.PENDING,
+        retry_count: 0
       });
     });
 
@@ -103,6 +105,7 @@ describe('DatabaseManager', () => {
       code_value: 'ABA',
       parent_code: '',
       status: ImportStatus.FAILED,
+      retry_count: 0,
       error: 'Test error message'
     };
 
@@ -117,7 +120,8 @@ describe('DatabaseManager', () => {
     const progress = {
       code_value: 'ABA',
       parent_code: '',
-      status: ImportStatus.PENDING
+      status: ImportStatus.PENDING,
+      retry_count: 0
     };
 
     db.insertProgress(progress);
