@@ -4,6 +4,8 @@ import { access } from 'fs/promises';
 import { constants } from 'fs';
 import logger from './utils/logger';
 import { ConfigLoader } from './config';
+import { DataLoader } from './data-loader';
+import { DatabaseManager } from './db';
 
 async function validateFilePath(path: string): Promise<void> {
   try {
@@ -14,6 +16,8 @@ async function validateFilePath(path: string): Promise<void> {
 }
 
 async function main() {
+  let db: DatabaseManager | undefined;
+  
   try {
     // Parse command line arguments
     const argv = await yargs(hideBin(process.argv))
@@ -42,11 +46,24 @@ async function main() {
     const config = await ConfigLoader.load(argv.config);
     logger.info('Configuration loaded successfully');
 
-    // TODO: Load and process Thema codes
+    // Initialize database
+    db = new DatabaseManager(config.database);
+    logger.info('Database initialized successfully');
+
+    // Load and validate Thema codes
+    const themaCodes = await DataLoader.loadThemaCodes(argv.source);
+    DataLoader.validateHierarchy(themaCodes);
+    logger.info(`Loaded ${themaCodes.length} Thema codes successfully`);
+
+    // TODO: Process Thema codes and create categories
     
   } catch (error) {
     logger.error('Error in main process:', error);
     process.exit(1);
+  } finally {
+    if (db) {
+      db.close();
+    }
   }
 }
 

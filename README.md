@@ -93,3 +93,65 @@ npm run dev -- --config=config.json --source=data/thema-codes.json
 ## License
 
 ISC 
+
+### Source Data Format
+
+The source JSON file should contain an array of Thema codes with the following structure:
+
+```json
+[
+  {
+    "CodeValue": "ABA",
+    "CodeDescription": "Theory of art",
+    "CodeNotes": "Usage information",
+    "CodeParent": "",
+    "IssueNumber": 1,
+    "Modified": "2024-02-28"
+  },
+  {
+    "CodeValue": "ABAA",
+    "CodeDescription": "Art techniques",
+    "CodeNotes": "Child category",
+    "CodeParent": "ABA",
+    "IssueNumber": 1,
+    "Modified": 1709136000000
+  }
+]
+```
+
+Required fields:
+- `CodeValue`: Unique identifier for the Thema code
+- `CodeDescription`: Human-readable description
+- `CodeNotes`: Additional information about the code
+- `CodeParent`: Parent code (empty string for top-level codes)
+- `IssueNumber`: Version number
+- `Modified`: Last modification date (string or timestamp)
+
+The script validates:
+- All required fields are present
+- Field types match the expected format
+- Parent codes exist in the dataset
+- JSON structure is valid 
+
+### Database Structure
+
+The script uses SQLite to track import progress. The database schema includes:
+
+```sql
+CREATE TABLE import_progress (
+  code_value TEXT PRIMARY KEY,
+  bc_category_id INTEGER,
+  parent_code TEXT,
+  status TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+```
+
+Status values:
+- `pending`: Code not yet processed
+- `in_progress`: Currently being imported
+- `completed`: Successfully imported
+- `failed`: Import failed
+
+The database file location is specified in the configuration file via the `database` property. 
