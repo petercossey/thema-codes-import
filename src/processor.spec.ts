@@ -81,9 +81,10 @@ describe('HierarchicalProcessor', () => {
     const results = await processor.processCodes(sampleCodes);
 
     expect(results).toHaveLength(2);
+    expect(results[0].categoryId).toBe(100);
+    expect(results[1].categoryId).toBe(101);
     expect(mockBcClient.createCategory).toHaveBeenCalledTimes(2);
     
-    // Verify processing order
     const calls = mockBcClient.createCategory.mock.calls;
     expect(calls[0][0].name).toBe('Top Level');
     expect(calls[1][0].name).toBe('Child Level');
@@ -91,10 +92,39 @@ describe('HierarchicalProcessor', () => {
 
   it('should handle missing parent categories', async () => {
     mockDb.getProgress.mockImplementation((codeValue: string): ImportProgress | undefined => undefined);
+    mockBcClient.createCategory.mockResolvedValue(201); // Mock successful category creation
 
     const results = await processor.processCodes([sampleCodes[1]]);
 
-    expect(results[0].error).toBeDefined();
-    expect(mockBcClient.createCategory).not.toHaveBeenCalled();
+    expect(results).toHaveLength(1);
+    expect(results[0].categoryId).toBe(201);
+    expect(mockBcClient.createCategory).toHaveBeenCalledWith(
+      expect.objectContaining({
+        parent_id: mockConfig.import.parentCategoryId // Should use default parent
+      })
+    );
+  });
+
+  it('should handle orphaned codes', async () => {
+    const orphanedCode = {
+      CodeValue: 'X',
+      CodeDescription: 'Orphaned',
+      CodeNotes: 'Notes',
+      CodeParent: 'NON_EXISTENT',
+      IssueNumber: 1,
+      Modified: '2024-03-01'
+    };
+
+    mockBcClient.createCategory.mockResolvedValue(301);
+
+    const results = await processor.processCodes([orphanedCode]);
+    
+    expect(results).toHaveLength(1);
+    expect(results[0].categoryId).toBe(301);
+    expect(mockBcClient.createCategory).toHaveBeenCalledWith(
+      expect.objectContaining({
+        parent_id: mockConfig.import.parentCategoryId
+      })
+    );
   });
 }); 

@@ -7,6 +7,12 @@ import logger from './utils/logger';
 import { mapThemaToCategory } from './mapper';
 import { ImportStatus } from './types/database';
 
+interface ProcessResult {
+  codeValue: string;
+  categoryId?: number;
+  error?: string;
+}
+
 export class HierarchicalProcessor {
   constructor(
     private db: DatabaseManager,
@@ -14,52 +20,58 @@ export class HierarchicalProcessor {
     private config: Config
   ) {}
 
-  async processCodes(codes: ThemaCode[]): Promise<ProcessingResult[]> {
-    const results: ProcessingResult[] = [];
-    const processed = new Set<string>();
-    
-    // First, validate all parent references exist
-    const codeMap = new Map(codes.map(code => [code.CodeValue, code]));
-    const orphanedCodes = codes.filter(code => 
-      code.CodeParent && !codeMap.has(code.CodeParent)
-    );
+  async processCodes(codes: ThemaCode[]): Promise<ProcessResult[]> {
+    const results: ProcessResult[] = [];
+    const processed = new Map<string, number>();
 
-    // Handle orphaned codes first
-    if (orphanedCodes.length > 0) {
-      const orphanResults = await Promise.all(
-        orphanedCodes.map(code => this.processCode(code))
-      );
-      results.push(...orphanResults);
-      orphanedCodes.forEach(code => processed.add(code.CodeValue));
+    // Process codes without parents first
+    for (const code of codes) {
+      if (!code.CodeParent) {
+        try {
+          const categoryId = await this.processCode(code);
+          processed.set(code.CodeValue, categoryId);
+          results.push({ codeValue: code.CodeValue, categoryId });
+        } catch (error) {
+          results.push({ 
+            codeValue: code.CodeValue, 
+            error: error instanceof Error ? error.message : String(error)
+          });
+        }
+      }
     }
 
-    // Process remaining codes in waves
-    while (processed.size < codes.length) {
-      const wave = codes.filter(code => {
-        // Skip already processed codes and orphaned codes
-        if (processed.has(code.CodeValue)) return false;
+    // Then process codes with parents
+    for (const code of codes) {
+      if (code.CodeParent) {
+        // Check if parent exists in processed map
+        const parentProcessed = processed.get(code.CodeParent);
+        const hasDefaultParent = this.config.import.parentCategoryId !== undefined;
         
-        // Include if top-level or parent is processed
-        return !code.CodeParent || processed.has(code.CodeParent);
-      });
-
-      if (wave.length === 0) {
-        logger.error('Circular dependency detected');
-        break;
+        // If no parent found and no default parent configured
+        if (!parentProcessed && !hasDefaultParent) {
+          results.push({ 
+            codeValue: code.CodeValue, 
+            error: `Parent category ${code.CodeParent} not found and no default parent category configured` 
+          });
+        } else {
+          try {
+            const categoryId = await this.processCode(code);
+            processed.set(code.CodeValue, categoryId);
+            results.push({ codeValue: code.CodeValue, categoryId });
+          } catch (error) {
+            results.push({ 
+              codeValue: code.CodeValue, 
+              error: error instanceof Error ? error.message : String(error)
+            });
+          }
+        }
       }
-
-      const waveResults = await Promise.all(
-        wave.map(code => this.processCode(code))
-      );
-
-      results.push(...waveResults);
-      wave.forEach(code => processed.add(code.CodeValue));
     }
 
     return results;
   }
 
-  private async processCode(code: ThemaCode): Promise<ProcessingResult> {
+  private async processCode(code: ThemaCode): Promise<number> {
     try {
       const parentId = await this.resolveParentId(code);
       
@@ -77,10 +89,7 @@ export class HierarchicalProcessor {
         status: ImportStatus.COMPLETED
       });
 
-      return {
-        codeValue: code.CodeValue,
-        categoryId
-      };
+      return categoryId;
 
     } catch (error) {
       logger.error(`Failed to process code ${code.CodeValue}:`, error);
@@ -90,28 +99,28 @@ export class HierarchicalProcessor {
         error: error instanceof Error ? error.message : String(error)
       });
 
-      return {
-        codeValue: code.CodeValue,
-        error: error instanceof Error ? error.message : String(error)
-      };
+      throw error;
     }
   }
 
   private async resolveParentId(code: ThemaCode): Promise<number | undefined> {
-    if (!code.CodeParent && this.config.import.parentCategoryId) {
+    // If no parent code is specified, return the default parent category ID
+    if (!code.CodeParent) {
       return this.config.import.parentCategoryId;
     }
 
-    if (code.CodeParent) {
-      const parent = this.db.getProgress(code.CodeParent);
-      
-      if (!parent?.bc_category_id) {
-        throw new Error(`Parent category ${code.CodeParent} not found or not yet processed`);
-      }
-      
+    // If parent code exists, try to get its category ID
+    const parent = await this.db.getProgress(code.CodeParent);
+    if (parent?.bc_category_id) {
       return parent.bc_category_id;
     }
 
-    return undefined;
+    // If parent code doesn't exist, fall back to default parent category ID
+    if (this.config.import.parentCategoryId) {
+      return this.config.import.parentCategoryId;
+    }
+
+    // Only throw if we have no fallback
+    throw new Error(`Parent category ${code.CodeParent} not found or not yet processed`);
   }
 } 

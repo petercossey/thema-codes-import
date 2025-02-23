@@ -93,4 +93,40 @@ describe('DatabaseManager', () => {
     const retrieved = db.getProgress('NON_EXISTENT');
     expect(retrieved).toBeUndefined();
   });
+
+  it('should store and retrieve error messages', () => {
+    const progress = {
+      code_value: 'ABA',
+      parent_code: '',
+      status: ImportStatus.FAILED,
+      error: 'Test error message'
+    };
+
+    db.insertProgress(progress);
+    const retrieved = db.getProgress('ABA');
+
+    expect(retrieved).toBeDefined();
+    expect(retrieved?.error).toBe('Test error message');
+  });
+
+  it('should update error messages', () => {
+    const progress = {
+      code_value: 'ABA',
+      parent_code: '',
+      status: ImportStatus.PENDING
+    };
+
+    db.insertProgress(progress);
+    
+    const updates = {
+      status: ImportStatus.FAILED,
+      error: 'New error message'
+    };
+
+    db.updateProgress('ABA', updates);
+    const retrieved = db.getProgress('ABA');
+
+    expect(retrieved?.status).toBe(ImportStatus.FAILED);
+    expect(retrieved?.error).toBe('New error message');
+  });
 }); 

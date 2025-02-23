@@ -23,6 +23,7 @@ export class DatabaseManager {
           bc_category_id INTEGER,
           parent_code TEXT,
           status TEXT NOT NULL,
+          error TEXT,
           created_at TEXT NOT NULL,
           updated_at TEXT NOT NULL
         );
@@ -44,8 +45,8 @@ export class DatabaseManager {
     try {
       const stmt = this.db.prepare(`
         INSERT INTO import_progress (
-          code_value, bc_category_id, parent_code, status, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?)
+          code_value, bc_category_id, parent_code, status, error, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
       `);
 
       stmt.run(
@@ -53,6 +54,7 @@ export class DatabaseManager {
         progress.bc_category_id,
         progress.parent_code,
         progress.status,
+        progress.error,
         now,
         now
       );
