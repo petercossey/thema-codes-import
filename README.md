@@ -2,6 +2,14 @@
 
 A TypeScript command-line tool that imports Thema subject codes into BigCommerce store categories.
 
+## Disclaimer
+
+This program is provided as-is, without any warranties or guarantees of any kind, express or implied. It is intended as a proof of concept only. The authors accept no liability for any data loss or other damages resulting from its use.
+
+## AI Attribution
+
+Significant portions of this codebase were generated with the assistance of AI coding tools. While efforts have been made to verify the code's functionality, users should review and test thoroughly before use in any critical environments.
+
 ## Setup
 
 1. Install dependencies:
@@ -78,9 +86,14 @@ npm run dev -- --config=config.json --source=data/thema-codes.json
 │   ├── config.ts            # Configuration loader
 │   ├── types/
 │   │   └── config.ts        # Configuration types
+│   │   └── bigcommerce.ts   # BigCommerce API types
+│   │   └── thema.ts         # Thema API types
+│   │   └── database.ts      # Database types
 │   ├── db.ts                # SQLite database handler
-│   ├── mapper.ts            # Field mapping logic  
+│   ├── mapper.ts            # Field mapping logic
 │   ├── bigcommerce.ts       # API client
+│   ├── processor.ts         # Main processing logic
+│   ├── data-loader.ts       # Data loading and validation
 │   └── utils/
 │       └── logger.ts        # Logging utility
 ├── package.json
@@ -98,24 +111,30 @@ ISC
 The source JSON file should contain an array of Thema codes with the following structure:
 
 ```json
-[
-  {
-    "CodeValue": "ABA",
-    "CodeDescription": "Theory of art",
-    "CodeNotes": "Usage information",
-    "CodeParent": "",
-    "IssueNumber": 1,
-    "Modified": "2024-02-28"
-  },
-  {
-    "CodeValue": "ABAA",
-    "CodeDescription": "Art techniques",
-    "CodeNotes": "Child category",
-    "CodeParent": "ABA",
-    "IssueNumber": 1,
-    "Modified": 1709136000000
+{
+  "CodeList": {
+    "ThemaCodes": {
+      "Code": [
+        {
+          "CodeValue": "ABA",
+          "CodeDescription": "Theory of art",
+          "CodeNotes": "Usage information",
+          "CodeParent": "",
+          "IssueNumber": 1,
+          "Modified": "2024-02-28"
+        },
+        {
+          "CodeValue": "ABAA",
+          "CodeDescription": "Art techniques",
+          "CodeNotes": "Child category",
+          "CodeParent": "ABA",
+          "IssueNumber": 1,
+          "Modified": "2024-02-28"
+        }
+      ]
+    }
   }
-]
+}
 ```
 
 Required fields:
@@ -139,11 +158,12 @@ The script uses SQLite to track import progress. The database schema includes:
 ```sql
 CREATE TABLE import_progress (
   code_value TEXT PRIMARY KEY,
-  bc_category_id INTEGER,
+  code_description TEXT NOT NULL,
   parent_code TEXT,
-  status TEXT NOT NULL,
-  created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL
+  status TEXT NOT NULL DEFAULT 'pending',
+  error TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
