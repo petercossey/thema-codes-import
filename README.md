@@ -102,10 +102,6 @@ npm run dev -- --config=config.json --source=data/thema-codes.json
 └── README.md
 ```
 
-## License
-
-ISC 
-
 ### Source Data Format
 
 The source JSON file should contain an array of Thema codes with the following structure:
